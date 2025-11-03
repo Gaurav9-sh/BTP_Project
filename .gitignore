@@ -1,11 +1,11 @@
-frontend/node_modules/
-backend/node_modules/
+Frontend/node_modules/
+Backend/node_modules/
 
 # Environment files
-frontend/.env
-backend/.env
+Frontend/.env
+Backend/.env
 
 # Logs
-frontend/logs/
-backend/logs/
+Frontend/logs/
+Backend/logs/
 *.log
