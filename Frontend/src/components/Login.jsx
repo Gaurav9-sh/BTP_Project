@@ -9,11 +9,6 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const validCredentials = {
-    'hod@lnmiit.ac.in': { password: '123456', role: 'hod', name: 'HOD' },
-    'aracademic@lnmiit.ac.in': { password: '123456', role: 'academics', name: 'Academic Officer' }
-  };
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,43 +17,50 @@ const Login = ({ onLogin }) => {
     setError(''); // Clear error when user starts typing
   };
 
-  const validateEmail = (email) => {
-    return email.endsWith('@lnmiit.ac.in');
-  };
-
+  /**
+   * This is the NEW handleSubmit function.
+   * It calls your real backend API.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       const { email, password } = formData;
 
-      // Validate email domain
-      if (!validateEmail(email)) {
-        setError('Only emails ending with @lnmiit.ac.in are allowed.');
-        return;
-      }
-
-      // Check credentials
-      const validUser = validCredentials[email];
-      if (!validUser || validUser.password !== password) {
-        setError('Invalid email or password.');
-        return;
-      }
-
-      // Successful login
-      onLogin({
-        email,
-        role: validUser.role,
-        name: validUser.name
+      // 1. Call your real backend API (the one we tested with curl)
+      // Make sure this port (8080) matches your backend server
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
+      // 2. Handle failure from the server
+      if (!response.ok) {
+        // Get the error message from the backend (e.g., "Invalid credentials")
+        const errorData = await response.json(); 
+        throw new Error(errorData.message || 'Invalid email or password.');
+      }
+
+      // 3. Handle success
+      const data = await response.json(); // This is your { token, user } object
+
+      // 4. --- THIS IS THE MOST IMPORTANT STEP ---
+      // Save the token and user data to the browser's storage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // 5. Tell the parent component (App.js) that we are logged in
+      // and pass it the user data
+      onLogin(data.user);
+
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      // This will catch both network errors and the error we threw
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,7 @@ const Login = ({ onLogin }) => {
               value={formData.email}
               onChange={handleChange}
               className="form-input"
-              placeholder="Enter your email (@lnmiit.ac.in)"
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -120,19 +122,11 @@ const Login = ({ onLogin }) => {
           </button>
         </form>
 
+        {/* This footer is now just a simple message */}
         <div className="login-footer">
-          <div className="demo-credentials">
-            <h4>Demo Credentials:</h4>
-            <div className="credentials-list">
-              <div className="credential-item">
-                <strong>HOD:</strong> hod@lnmiit.ac.in / 123456
-              </div>
-              <div className="credential-item">
-                <strong>Academic:</strong> aracademic@lnmiit.ac.in / 123456
-              </div>
-            </div>
-          </div>
+          <p>Please use your assigned university credentials.</p>
         </div>
+
       </div>
     </div>
   );

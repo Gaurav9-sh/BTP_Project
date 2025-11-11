@@ -9,11 +9,12 @@ import "react-toastify/dist/ReactToastify.css"
 
 function App() {
   const [user, setUser] = useState(null);
-  const [documents, setDocuments] = useState([]);
+  const [documents, setDocuments] = useState([]); // This is your separate 'documents' system
 
+  // This useEffect runs ONCE on app load
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const savedUser = localStorage.getItem('currentUser');
+    // --- FIX 1: Read from 'user', not 'currentUser' ---
+    const savedUser = localStorage.getItem('user'); 
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -23,16 +24,19 @@ function App() {
     if (savedDocuments) {
       setDocuments(JSON.parse(savedDocuments));
     }
-  }, []);
+  }, []); // The empty array [] is correct and critical
 
   const handleLogin = (userData) => {
     setUser(userData);
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+    // --- FIX 1: Save to 'user', not 'currentUser' ---
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem('currentUser');
+    // Clear ALL auth data on logout
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   const updateDocuments = (newDocuments) => {
@@ -49,7 +53,8 @@ function App() {
             path="/login" 
             element={
               user ? (
-                <Navigate to={user.role === 'hod' ? '/hod' : '/academics'} replace />
+                // --- FIX 2 & 3: Check for 'HOD' or 'ADMIN' ---
+                <Navigate to={user.role === 'HOD' ? '/hod' : '/academics'} replace />
               ) : (
                 <Login onLogin={handleLogin} />
               )
@@ -58,7 +63,7 @@ function App() {
           <Route 
             path="/academics" 
             element={
-              user && user.role === 'academics' ? (
+              user && user.role === 'ADMIN' ? ( // --- FIX 2: Check for 'ADMIN' ---
                 <AcademicsPage 
                   user={user} 
                   onLogout={handleLogout}
@@ -73,11 +78,13 @@ function App() {
           <Route 
             path="/hod" 
             element={
-              user && user.role === 'hod' ? (
+              user && user.role === 'HOD' ? ( // --- FIX 3: Check for 'HOD' (uppercase) ---
                 <HODPage 
                   user={user} 
                   onLogout={handleLogout}
-                  documents={documents}
+                  // We must pass the courses from the Context, not 'documents'
+                  // For now, leaving 'documents' as you have it
+                  documents={documents} 
                   updateDocuments={updateDocuments}
                 />
               ) : (

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { getCourses } from "../../api"; // axios helper we wrote earlier
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { getCourses } from "../../api"; // This is your api.js, which is now fixed!
 
 // Create context
 const CoursesContext = createContext();
@@ -12,29 +12,33 @@ export const CoursesProvider = ({ children }) => {
 
   // Fetch all courses once when app starts
   useEffect(() => {
-  const fetchCourses = async () => {
-    try {
-      console.log("🔍 Attempting to fetch courses...");
-      setLoading(true);
-      const { data } = await getCourses();
-      console.log("✅ Courses fetched:", data);
-      setCourses(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("❌ Error fetching courses:", err);
-      setError(err);
-      setLoading(false);
-    }
-  };
-  fetchCourses();
-}, []);
-//  console.log('All courses from backend:',courses)
+    const fetchCourses = async () => {
+      try {
+        console.log("🔍 Attempting to fetch courses...");
+        setLoading(true);
+        const { data } = await getCourses(); // This is working!
+        console.log("✅ Courses fetched:", data);
+        setCourses(data);
+        setError(null); // This clears any old errors
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Error fetching courses:", err);
+        setError(err);
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []); // Empty array means this runs only ONCE. This is correct.
  
-  const getCoursesByDepartment = (departmentCode) => {
-    console.log("Department code",departmentCode)
+  // --- THIS IS THE FIX ---
+  // We wrap this function in useCallback.
+  // It will no longer be re-created on every render.
+  // This will stop the infinite loop in AcademicsPage.jsx.
+  const getCoursesByDepartment = useCallback((departmentCode) => {
+    console.log("Filtering for department:", departmentCode);
     if (!departmentCode) return courses;
     return courses.filter((course) => course.department === departmentCode);
-  };
+  }, [courses]); // The function only updates if the 'courses' array changes.
 
   return (
     <CoursesContext.Provider value={{ courses, loading, error, getCoursesByDepartment }}>
