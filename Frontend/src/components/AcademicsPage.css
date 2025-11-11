@@ -399,3 +399,37 @@
     flex-direction: column;
   }
 }
+
+/* FIX: Override default text color for all inputs inside tables */
+.table input,
+.table select {
+    color: #333 !important; /* Forces dark gray text color */
+    background-color: white; /* Ensures background remains white for contrast */
+}
+
+/* FIX: Specifically target the 'Add New Course' inputs below the table */
+.semester-card tr:last-child input {
+    color: #333 !important;
+}
+
+/* FIX: Ensure editing cells in Central Management are also dark */
+.central-header + .card input {
+    color: #333 !important;
+}
+
+/* Optional: Add some padding to inputs for better visibility */
+.table input {
+    padding: 4px 6px; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Central table sizing */
+.table-responsive {
+  max-height: 70vh;           /* taller viewport for the table */
+  overflow-y: auto;
+}
+
+.table th, .table td {
+  vertical-align: top;
+}

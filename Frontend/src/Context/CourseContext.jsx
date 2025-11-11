@@ -12,19 +12,22 @@ export const CoursesProvider = ({ children }) => {
 
   // Fetch all courses once when app starts
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true);
-        const { data } = await getCourses();
-        setCourses(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
-    };
-    fetchCourses();
-  }, []);
+  const fetchCourses = async () => {
+    try {
+      console.log("🔍 Attempting to fetch courses...");
+      setLoading(true);
+      const { data } = await getCourses();
+      console.log("✅ Courses fetched:", data);
+      setCourses(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error fetching courses:", err);
+      setError(err);
+      setLoading(false);
+    }
+  };
+  fetchCourses();
+}, []);
 //  console.log('All courses from backend:',courses)
  
   const getCoursesByDepartment = (departmentCode) => {
