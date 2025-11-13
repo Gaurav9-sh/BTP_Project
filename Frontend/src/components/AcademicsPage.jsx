@@ -371,7 +371,11 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
 
     
     const filteredCentralData = selectedSemester
-        ? centralData.filter(course => String(course.semester) === String(selectedSemester))
+        ? selectedSemester === 'ODD'
+            ? centralData.filter(course => [1, 3, 5, 7].includes(course.semester))
+            : selectedSemester === 'EVEN'
+                ? centralData.filter(course => [2, 4, 6, 8].includes(course.semester))
+                : centralData.filter(course => String(course.semester) === String(selectedSemester))
         : centralData;
 
     const handleDepartmentClick = (dept) => {
@@ -550,7 +554,14 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
             hour: '2-digit', minute: '2-digit' 
         }); 
         
-        const semesterTitle = selectedSemester ? `Semester ${selectedSemester}` : "All Semesters";
+        let semesterTitle = "All Semesters";
+        if (selectedSemester === 'ODD') {
+            semesterTitle = "Odd Semesters (1, 3, 5, 7)";
+        } else if (selectedSemester === 'EVEN') {
+            semesterTitle = "Even Semesters (2, 4, 6, 8)";
+        } else if (selectedSemester) {
+            semesterTitle = `Semester ${selectedSemester}`;
+        }
 
         const newDocument = {
             id: Date.now(), 
@@ -839,12 +850,11 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                     className="form-input"
                                     value={selectedSemester || ''}
                                     onChange={(e) => setSelectedSemester(e.target.value)}
-                                    style={{ padding: '8px', minWidth: '150px', background: '#fff', color: '#000' }}
+                                    style={{ padding: '8px', minWidth: '180px', background: '#fff', color: '#000' }}
                                 >
-                                    <option value="">Semester</option> 
-                                    {allSemesters.map(sem => (
-                                        <option key={sem} value={sem}>Semester {sem}</option>
-                                    ))}
+                                    <option value="">All Semesters</option>
+                                    <option value="ODD">Odd Semesters (1, 3, 5, 7)</option>
+                                    <option value="EVEN">Even Semesters (2, 4, 6, 8)</option>
                                 </select>
                                 <button onClick={() => toast.info("Generate Timetable clicked!")} className="btn btn-secondary">
                                     Generate Timetable
