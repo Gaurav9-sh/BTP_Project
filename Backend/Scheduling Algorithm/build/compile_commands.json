@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/build",
+  "command": "/usr/bin/c++ -DOR_PROTO_DLL=\"\" -DUSE_BOP -DUSE_CBC -DUSE_CLP -DUSE_GLOP -DUSE_HIGHS -DUSE_MATH_OPT -DUSE_PDLP -DUSE_SCIP -isystem /opt/homebrew/include -isystem /opt/homebrew/Cellar/cbc/2.10.12/include/cbc/coin -isystem /opt/homebrew/Cellar/cgl/0.60.9/include/cgl/coin -isystem /opt/homebrew/Cellar/clp/1.17.10/include/clp/coin -isystem /opt/homebrew/Cellar/osi/0.108.11/include/osi/coin -isystem /opt/homebrew/Cellar/coinutils/2.11.12/include/coinutils/coin -isystem /opt/homebrew/include/highs -isystem /opt/homebrew/include/eigen3 -std=gnu++17 -fPIE -fwrapv -Wno-invalid-offsetof -o CMakeFiles/timetable_solver.dir/timetable_solver.cpp.o -c \"/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/timetable_solver.cpp\"",
+  "file": "/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/timetable_solver.cpp",
+  "output": "CMakeFiles/timetable_solver.dir/timetable_solver.cpp.o"
+}
+]

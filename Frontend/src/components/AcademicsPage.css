@@ -2,6 +2,7 @@
   min-height: 100vh;
   background-color: #f8fafc;
   width: 98.9vw;
+  overflow: visible !important;
 }
 
 .dashboard-stats {
@@ -77,6 +78,7 @@
 
 .tab-content {
   margin-top: 24px;
+  overflow: visible !important;
 }
 
 .departments-grid {
@@ -148,10 +150,26 @@
 
 .table-responsive {
   overflow-x: auto;
+  overflow-y: visible !important;        /* Allow dropdowns to overflow */
 }
 
 .table {
   min-width: 800px;
+  overflow: visible !important;
+}
+
+.table tbody {
+  overflow: visible !important;
+}
+
+.table tbody tr {
+  overflow: visible !important;
+  position: relative;
+}
+
+.table tbody td {
+  overflow: visible !important;
+  position: relative;
 }
 
 .table td span {
@@ -424,12 +442,50 @@
     border-radius: 4px;
 }
 
-/* Central table sizing */
-.table-responsive {
-  max-height: 70vh;           /* taller viewport for the table */
-  overflow-y: auto;
-}
-
+/* Table styling */
 .table th, .table td {
   vertical-align: top;
+}
+
+/* Faculty Assignment and Batch Selector Dropdowns */
+.faculty-assignment-container,
+.batch-selector {
+  position: relative !important;
+  min-height: 60px;
+  overflow: visible !important;
+}
+
+.faculty-dropdown,
+.batch-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  z-index: 9999 !important;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+  padding: 16px;
+  min-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: visible;
+  margin-top: 8px;
+}
+
+/* Ensure dropdowns are always visible and never clipped */
+.central-header + .card {
+  overflow: visible !important;
+  padding-bottom: 600px !important;      /* ONLY for the central management card */
+  min-height: 100vh;                     /* Ensure enough space for dropdowns */
+}
+
+.central-header + .card .table-responsive {
+  overflow-y: visible !important;
+  overflow-x: auto;
+  padding-bottom: 500px !important;      /* Extra padding for dropdowns in central management */
+}
+
+.central-header + .card .table tbody tr td {
+  overflow: visible !important;
 }

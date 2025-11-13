@@ -6,6 +6,7 @@ import cors from "cors";
 import coursesRoutes from "./Routes/coureses.js";
 import authRoutes from "./Routes/auth.js";
 import hodRoutes from "./Routes/hod.js";
+import configurationsRoutes from "./Routes/configurations.js";
 
 // Load environment variables
 dotenv.config();
@@ -58,3 +59,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 app.use("/api/auth", authRoutes);   
 app.use("/api/hod", hodRoutes);
+app.use("/api/configurations", configurationsRoutes);

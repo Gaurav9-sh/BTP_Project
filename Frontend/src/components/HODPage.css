@@ -210,10 +210,39 @@
 
 .table-responsive {
   overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Fix for dropdown visibility */
+.table tbody tr {
+  position: relative;
+}
+
+.table tbody td {
+  overflow: visible !important;
 }
 
 .edit-table {
   min-width: 900px;
+  border-spacing: 0 8px;
+  border-collapse: separate;
+}
+
+.edit-table tbody tr {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.edit-table td {
+  padding: 24px 16px !important;
+  vertical-align: top;
+  min-height: 100px;
+}
+
+.edit-table thead th {
+  padding: 16px !important;
+  background: #f9fafb;
+  font-weight: 600;
 }
 
 .edit-table td span {
@@ -252,6 +281,10 @@
   background-color: #fffbeb;
 }
 
+.incomplete-row td:first-child {
+  border-left: 4px solid #f59e0b;
+}
+
 .status-incomplete {
   background-color: #fef3c7;
   color: #92400e;
@@ -260,6 +293,57 @@
 .status-complete {
   background-color: #d1fae5;
   color: #065f46;
+}
+
+/* Faculty and Batch Assignment Components */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  margin: 4px 2px;
+}
+
+.tag:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.faculty-search-item:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.batch-dropdown,
+.faculty-dropdown {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  z-index: 9999 !important;
+}
+
+/* Faculty and Batch Assignment Containers */
+.faculty-assignment-container,
+.batch-selector {
+  position: relative;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faculty-assignment-container > div,
+.batch-selector > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Read-only course fields styling */
+.edit-table td[style*="background: #f9fafb"] {
+  cursor: not-allowed;
+  user-select: none;
+}
+
+/* Ensure parent containers don't clip dropdowns */
+.edit-header + .card {
+  overflow: visible !important;
 }
 
 /* Mobile Responsive */

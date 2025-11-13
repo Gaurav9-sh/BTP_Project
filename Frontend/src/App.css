@@ -20,6 +20,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  overflow: visible !important;
 }
 
 .card {
@@ -29,6 +30,7 @@ body {
   padding: 24px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
+  overflow: visible !important;
 }
 
 .card:hover {
@@ -130,7 +132,7 @@ body {
   margin-top: 16px;
   background: white;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible !important;          /* Allow dropdowns to show */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 

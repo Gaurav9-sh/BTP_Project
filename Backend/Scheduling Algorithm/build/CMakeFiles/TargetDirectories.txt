@@ -1,0 +1,3 @@
+/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/build/CMakeFiles/timetable_solver.dir
+/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/build/CMakeFiles/edit_cache.dir
+/Users/just_exist/Desktop/Project UI/BTP_Project/Backend/Scheduling Algorithm/build/CMakeFiles/rebuild_cache.dir

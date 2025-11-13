@@ -37,6 +37,30 @@ const courseSchema = new mongoose.Schema(
     max: 8,
   },
 
+  // ✅ CENTRAL MANAGEMENT: Faculty Assignment Data
+  facultyAssignments: {
+    type: [
+      {
+        facultyEmail: { type: String, required: true },
+        isCoordinator: { type: Boolean, default: false }
+      }
+    ],
+    default: []
+  },
+
+  // ✅ CENTRAL MANAGEMENT: Student Batch Data
+  studentBatches: {
+    type: [String],
+    default: []
+  },
+
+  // ✅ CENTRAL MANAGEMENT: Sharing Type
+  sharingType: {
+    type: String,
+    enum: ["Horizontal", "Vertical"],
+    default: "Horizontal"
+  },
+
   // ✅ HOD workflow fields
   hodStatus: {
     type: String,

@@ -1,0 +1,13 @@
+course_id,title,hours_per_week,teacher_id,batch_id,requires_lab
+CS201,Data Structures,3,T01,B23,False
+EE317,Digital Electronics Lab,2,T02,B22,True
+MA101,Calculus I,3,T03,B23,False
+PH102,Physics II,3,T03,B22,False
+CS305,Operating Systems,3,T01,B23,False
+EC210,Signals & Systems,3,T04,B22,False
+EE221,Power Electronics,3,T02,B22,True
+ME110,Thermodynamics,3,T05,B21,False
+CS401,Machine Learning,3,T06,B23,False
+CS408,Blockchain Technology,2,T06,B23,False
+BIO105,Cell Biology,3,T04,B24,True
+CHEM110,Organic Chemistry,3,T05,B24,True

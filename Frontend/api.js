@@ -45,3 +45,23 @@ export const getCourses = (department = null) => {
 export const updateCourse = (id, updatedData) => API.put(`/courses/${id}`, updatedData);
 export const deleteCourse = (id) => API.delete(`/courses/${id}`);
 export const createCourse = (newCourse) => API.post("/courses", newCourse);
+
+// ✅ Configuration API functions
+
+// Batches
+export const getBatches = () => API.get("/configurations/batches");
+export const createBatch = (batch) => API.post("/configurations/batches", batch);
+export const updateBatch = (id, batch) => API.put(`/configurations/batches/${id}`, batch);
+export const deleteBatch = (id) => API.delete(`/configurations/batches/${id}`);
+
+// Rooms
+export const getRooms = () => API.get("/configurations/rooms");
+export const createRoom = (room) => API.post("/configurations/rooms", room);
+export const updateRoom = (id, room) => API.put(`/configurations/rooms/${id}`, room);
+export const deleteRoom = (id) => API.delete(`/configurations/rooms/${id}`);
+
+// Slots
+export const getSlots = () => API.get("/configurations/slots");
+export const createSlot = (slot) => API.post("/configurations/slots", slot);
+export const updateSlot = (id, slot) => API.put(`/configurations/slots/${id}`, slot);
+export const deleteSlot = (id) => API.delete(`/configurations/slots/${id}`);

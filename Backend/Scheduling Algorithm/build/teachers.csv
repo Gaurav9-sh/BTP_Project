@@ -1,0 +1,7 @@
+teacher_id,name,unavailable_slots,max_hours_per_day
+T01,Prof Anita,Tue-D;Thu-A,3
+T02,Dr Vikas,Mon-C;Wed-B,4
+T03,Dr Raghav,Fri-B;Fri-C,3
+T04,Prof Meera,Mon-A,4
+T05,Dr Karthik,Thu-E,3
+T06,Dr Shalini,Wed-D,4

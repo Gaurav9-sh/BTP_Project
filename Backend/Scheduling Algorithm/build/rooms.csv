@@ -1,0 +1,9 @@
+room_id,capacity,is_lab
+L1,120,False
+L2,120,False
+L3,60,False
+L4,40,True
+L5,60,True
+L6,80,False
+L7,50,False
+Lab1,30,True

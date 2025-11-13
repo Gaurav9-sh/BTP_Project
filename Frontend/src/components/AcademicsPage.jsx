@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import './AcademicsPage.css';
 import { useCourses } from '../Context/CourseContext';
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaSearch } from "react-icons/fa";
-import { updateCourse, deleteCourse, createCourse } from '../../api';
+import { updateCourse, deleteCourse, createCourse, getBatches, getSlots } from '../../api';
 import { toast } from "react-toastify";
+import ConfigurationsPage from './ConfigurationsPage';
 
 // --- GLOBAL CONSTANTS ---
 
@@ -15,17 +16,11 @@ const DUMMY_FACULTY_DATA = [
   { id: 1678880000005, name: "Dr. Priya Jain", designation: "Dr.", firstName: "Priya", middleName: "", lastName: "Jain", employeeId: "F005", email: "priya@lnmiit.ac.in", department: "Humanities and Social Sciences", addedAt: "2025-11-10, 8:04:00 PM", "addedBy": "admin@lnmiit.ac.in" }
 ];
 
-const BATCH_OPTIONS = [
-    { name: 'CSE-A', code: 'CSE-A', capacity: 120 },
-    { name: 'CSE-B', code: 'CSE-B', capacity: 120 },
-    { name: 'CCE', code: 'CCE', capacity: 120 },
-    { name: 'ECE', code: 'ECE', capacity: 120 },
-    { name: 'ME', code: 'ME', capacity: 120 },
-];
+// BATCH_OPTIONS will be loaded from the database dynamically
 
 // --- HELPER COMPONENTS ---
 
-const StudentBatchSelector = ({ course, handleBatchToggle, calculateTotalStudents, isEditing, toggleEditing }) => {
+const StudentBatchSelector = ({ course, handleBatchToggle, calculateTotalStudents, isEditing, toggleEditing, batchOptions }) => {
     const selectedBatches = course.studentBatches || [];
     const dropdownRef = useRef(null);
     
@@ -65,7 +60,7 @@ const StudentBatchSelector = ({ course, handleBatchToggle, calculateTotalStudent
                     padding: '10px', zIndex: 100, width: '250px', left: 0 
                 }}>
                     <button onClick={toggleEditing} style={{ float: 'right', border: 'none', background: 'none', cursor: 'pointer', fontSize: '16px' }}>&times;</button>
-                    {BATCH_OPTIONS.map(batch => (
+                    {batchOptions.map(batch => (
                         <div key={batch.code} style={{ display: 'flex', alignItems: 'center', padding: '8px 5px' }}>
                             <input
                                 type="checkbox"
@@ -236,8 +231,12 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
     
     const [newFaculty, setNewFaculty] = useState({
         designation: '', firstName: '', middleName: '', lastName: '',
-        employeeId: '', email: '', department: '' 
+        employeeId: '', email: '', department: '', unavailableSlots: []
     });
+    
+    const [slots, setSlots] = useState([]);
+    const [editingFacultySlots, setEditingFacultySlots] = useState(null);
+    const slotSelectorRef = useRef(null);
     
     const [editingCell, setEditingCell] = useState(null); 
     const [showAddFacultyForm, setShowAddFacultyForm] = useState(false);
@@ -253,6 +252,8 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
         department: "", facultyAssignments: [], studentBatches: [], sharingType: 'Horizontal',
     });
 
+    const [batchOptions, setBatchOptions] = useState([]);
+
     const departments = [
         { id: 'cse', name: 'Computer Science and Engineering', code: 'CSE' },
         { id: 'cce', name: 'Communication and Computer Engineering', code: 'CCE' },
@@ -265,10 +266,57 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
     
     const calculateTotalStudents = (batchCodes) => {
         return batchCodes.reduce((total, code) => {
-            const batch = BATCH_OPTIONS.find(b => b.code === code);
+            const batch = batchOptions.find(b => b.code === code);
             return total + (batch ? batch.capacity : 0);
         }, 0);
     };
+
+    // Fetch batches from the database
+    useEffect(() => {
+        const loadBatches = async () => {
+            try {
+                const res = await getBatches();
+                const formattedBatches = res.data.map(batch => ({
+                    name: batch.batchId,
+                    code: batch.batchId,
+                    capacity: batch.size
+                }));
+                setBatchOptions(formattedBatches);
+            } catch (err) {
+                console.error("Error loading batches:", err);
+                toast.error("Failed to load batches");
+            }
+        };
+        loadBatches();
+    }, []);
+
+    // Fetch slots from the database
+    useEffect(() => {
+        const loadSlots = async () => {
+            try {
+                const res = await getSlots();
+                setSlots(res.data);
+            } catch (err) {
+                console.error("Error loading slots:", err);
+            }
+        };
+        loadSlots();
+    }, []);
+
+    // Handle click outside slot selector
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (slotSelectorRef.current && !slotSelectorRef.current.contains(event.target)) {
+                setEditingFacultySlots(null);
+            }
+        };
+        if (editingFacultySlots) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [editingFacultySlots]);
 
     // This hook runs after loading is complete to build the initial table
     useEffect(() => {
@@ -298,10 +346,20 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
 
             const savedFaculties = localStorage.getItem('faculties');
             if (savedFaculties && JSON.parse(savedFaculties).length > 0) {
-                setFaculties(JSON.parse(savedFaculties));
+                // Ensure all faculties have unavailableSlots field
+                const facultiesWithSlots = JSON.parse(savedFaculties).map(f => ({
+                    ...f,
+                    unavailableSlots: f.unavailableSlots || []
+                }));
+                setFaculties(facultiesWithSlots);
+                localStorage.setItem('faculties', JSON.stringify(facultiesWithSlots));
             } else {
-                setFaculties(DUMMY_FACULTY_DATA);
-                localStorage.setItem('faculties', JSON.stringify(DUMMY_FACULTY_DATA));
+                const dummyWithSlots = DUMMY_FACULTY_DATA.map(f => ({
+                    ...f,
+                    unavailableSlots: []
+                }));
+                setFaculties(dummyWithSlots);
+                localStorage.setItem('faculties', JSON.stringify(dummyWithSlots));
             }
         }
     }, [loading, getCoursesByDepartment]); 
@@ -535,6 +593,7 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
             employeeId: newFaculty.employeeId,
             email: newFaculty.email,
             department: newFaculty.department,
+            unavailableSlots: newFaculty.unavailableSlots || [],
             addedAt: new Date().toLocaleString(),
             addedBy: user.email
         };
@@ -545,7 +604,7 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
 
         setNewFaculty({ 
             designation: '', firstName: '', middleName: '', lastName: '',
-            employeeId: '', email: '', department: '' 
+            employeeId: '', email: '', department: '', unavailableSlots: []
         }); 
         setShowAddFacultyForm(false);
         toast.success('Faculty added successfully!');
@@ -566,6 +625,30 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
             localStorage.setItem('faculties', JSON.stringify(updatedFaculties));
             toast.success('Faculty deleted successfully!');
         }
+    };
+
+    const handleUpdateFacultySlots = (facultyId, slotIds) => {
+        const updatedFaculties = faculties.map(faculty => 
+            faculty.id === facultyId 
+                ? { ...faculty, unavailableSlots: slotIds }
+                : faculty
+        );
+        setFaculties(updatedFaculties);
+        localStorage.setItem('faculties', JSON.stringify(updatedFaculties));
+        setEditingFacultySlots(null);
+        toast.success('Unavailable slots updated successfully!');
+    };
+
+    const handleToggleSlot = (facultyId, slotId) => {
+        const faculty = faculties.find(f => f.id === facultyId);
+        if (!faculty) return;
+        
+        const currentSlots = faculty.unavailableSlots || [];
+        const newSlots = currentSlots.includes(slotId)
+            ? currentSlots.filter(id => id !== slotId)
+            : [...currentSlots, slotId];
+        
+        handleUpdateFacultySlots(facultyId, newSlots);
     };
 
     const getStatusCount = (status) => {
@@ -635,6 +718,12 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                         onClick={() => setActiveTab('documents')}
                     >
                         Document Status
+                    </button>
+                    <button
+                        className={`tab ${activeTab === 'configurations' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('configurations')}
+                    >
+                        Configurations
                     </button>
                 </div>
                 
@@ -810,6 +899,7 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                                         calculateTotalStudents={calculateTotalStudents}
                                                         isEditing={editingCell === `${course.id}-batches`}
                                                         toggleEditing={() => setEditingCell(editingCell === `${course.id}-batches` ? null : `${course.id}-batches`)}
+                                                        batchOptions={batchOptions}
                                                     />
                                                 </td>
                                                 
@@ -948,6 +1038,46 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                             ))}
                                         </select>
                                     </div>
+                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                        <label className="form-label">Unavailable Time Slots (Optional)</label>
+                                        <div style={{ 
+                                            display: 'grid', 
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+                                            gap: '8px',
+                                            marginTop: '8px',
+                                            maxHeight: '200px',
+                                            overflowY: 'auto',
+                                            padding: '12px',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            background: '#f9fafb'
+                                        }}>
+                                            {slots.map(slot => (
+                                                <label key={slot._id} style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    gap: '6px',
+                                                    cursor: 'pointer',
+                                                    padding: '4px'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newFaculty.unavailableSlots?.includes(slot.slotId) || false}
+                                                        onChange={(e) => {
+                                                            const current = newFaculty.unavailableSlots || [];
+                                                            const updated = e.target.checked
+                                                                ? [...current, slot.slotId]
+                                                                : current.filter(id => id !== slot.slotId);
+                                                            setNewFaculty({ ...newFaculty, unavailableSlots: updated });
+                                                        }}
+                                                    />
+                                                    <span style={{ fontSize: '13px' }}>
+                                                        {slot.slotId} ({slot.startTime}-{slot.endTime})
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="form-actions">
                                     <button onClick={handleAddFaculty} className="btn btn-success">
@@ -978,6 +1108,7 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                             <th>Employee ID</th> 
                                             <th>Email</th> 
                                             <th>Department</th>
+                                            <th>Unavailable Slots</th>
                                             <th>Added Date</th> 
                                             <th>Added By</th> 
                                             <th>Actions</th>
@@ -990,6 +1121,135 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                                 <td>{faculty.employeeId}</td> 
                                                 <td>{faculty.email}</td> 
                                                 <td>{faculty.department}</td>
+                                                <td>
+                                                    {editingFacultySlots === faculty.id ? (
+                                                        <div ref={slotSelectorRef} style={{ position: 'relative' }}>
+                                                            <div style={{ 
+                                                                display: 'flex', 
+                                                                flexWrap: 'wrap', 
+                                                                gap: '4px', 
+                                                                marginBottom: '8px',
+                                                                maxWidth: '300px'
+                                                            }}>
+                                                                {(faculty.unavailableSlots || []).map(slotId => (
+                                                                    <span key={slotId} style={{ 
+                                                                        background: '#fee2e2', 
+                                                                        color: '#991b1b', 
+                                                                        padding: '2px 6px', 
+                                                                        borderRadius: '8px', 
+                                                                        fontSize: '12px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '4px'
+                                                                    }}>
+                                                                        {slotId}
+                                                                        <FaTimes 
+                                                                            size={10} 
+                                                                            style={{ cursor: 'pointer' }}
+                                                                            onClick={() => handleToggleSlot(faculty.id, slotId)}
+                                                                        />
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                            <div style={{ 
+                                                                position: 'absolute',
+                                                                top: '100%',
+                                                                left: 0,
+                                                                background: 'white',
+                                                                border: '1px solid #ddd',
+                                                                borderRadius: '8px',
+                                                                padding: '12px',
+                                                                zIndex: 1000,
+                                                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                                maxHeight: '300px',
+                                                                overflowY: 'auto',
+                                                                minWidth: '250px',
+                                                                marginTop: '4px'
+                                                            }}>
+                                                                <div style={{ 
+                                                                    display: 'flex', 
+                                                                    justifyContent: 'space-between',
+                                                                    alignItems: 'center',
+                                                                    marginBottom: '8px'
+                                                                }}>
+                                                                    <strong style={{ fontSize: '14px' }}>Select Unavailable Slots</strong>
+                                                                    <button 
+                                                                        onClick={() => setEditingFacultySlots(null)}
+                                                                        style={{ 
+                                                                            border: 'none', 
+                                                                            background: 'none', 
+                                                                            cursor: 'pointer',
+                                                                            fontSize: '18px',
+                                                                            color: '#666'
+                                                                        }}
+                                                                    >
+                                                                        &times;
+                                                                    </button>
+                                                                </div>
+                                                                <div style={{ 
+                                                                    display: 'grid', 
+                                                                    gridTemplateColumns: 'repeat(2, 1fr)', 
+                                                                    gap: '6px'
+                                                                }}>
+                                                                    {slots.map(slot => (
+                                                                        <label key={slot._id} style={{ 
+                                                                            display: 'flex', 
+                                                                            alignItems: 'center', 
+                                                                            gap: '6px',
+                                                                            cursor: 'pointer',
+                                                                            padding: '4px',
+                                                                            fontSize: '12px'
+                                                                        }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={(faculty.unavailableSlots || []).includes(slot.slotId)}
+                                                                                onChange={() => handleToggleSlot(faculty.id, slot.slotId)}
+                                                                            />
+                                                                            <span>
+                                                                                {slot.slotId}
+                                                                            </span>
+                                                                        </label>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                                            {(faculty.unavailableSlots || []).length > 0 ? (
+                                                                <>
+                                                                    {(faculty.unavailableSlots || []).slice(0, 3).map(slotId => (
+                                                                        <span key={slotId} style={{ 
+                                                                            background: '#fee2e2', 
+                                                                            color: '#991b1b', 
+                                                                            padding: '2px 6px', 
+                                                                            borderRadius: '8px', 
+                                                                            fontSize: '11px'
+                                                                        }}>
+                                                                            {slotId}
+                                                                        </span>
+                                                                    ))}
+                                                                    {(faculty.unavailableSlots || []).length > 3 && (
+                                                                        <span style={{ fontSize: '11px', color: '#666' }}>
+                                                                            +{(faculty.unavailableSlots || []).length - 3} more
+                                                                        </span>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <span style={{ color: '#9ca3af', fontSize: '13px' }}>None</span>
+                                                            )}
+                                                            <FaEdit 
+                                                                size={12} 
+                                                                color="#6495ED" 
+                                                                style={{ cursor: 'pointer', marginLeft: '6px' }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setEditingFacultySlots(editingFacultySlots === faculty.id ? null : faculty.id);
+                                                                }}
+                                                                title="Edit unavailable slots"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td>{faculty.addedAt}</td> 
                                                 <td>{faculty.addedBy}</td>
                                                 <td>
@@ -1049,6 +1309,12 @@ const AcademicsPage = ({ user, onLogout, documents, updateDocuments }) => {
                                 </table>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'configurations' && (
+                    <div className="tab-content fade-in">
+                        <ConfigurationsPage />
                     </div>
                 )}
             </main>
