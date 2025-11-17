@@ -39,3 +39,4 @@ export const Batch = mongoose.model("Batch", batchSchema);
 export const Room = mongoose.model("Room", roomSchema);
 export const Slot = mongoose.model("Slot", slotSchema);
 
+

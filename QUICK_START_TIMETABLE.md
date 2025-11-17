@@ -308,3 +308,4 @@ After successfully generating your first timetable:
 
 For detailed testing, see `TIMETABLE_TESTING_CHECKLIST.md`
 
+
